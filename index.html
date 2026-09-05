@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OoT Randomizer Notes</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131826;
+    --panel2: #1b2336;
+    --border: #3a4560;
+    --text: #ece6d8;
+    --muted: #a9a394;
+    --gold: #d6af3c;
+    --green: #63a854;
+    --red: #cf6f6f;
+    --accent: #e0b94f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: #080b12;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  header h1 {
+    font-size: 16px; margin: 0; letter-spacing: .5px;
+    color: #e0b94f;
+  }
+  header .saved { color: var(--muted); font-size: 12px; }
+  header .spacer { flex: 1; }
+  .btn {
+    background: var(--panel2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn:hover { border-color: var(--gold); color: #ffd96b; }
+  .btn.primary { background: var(--gold); border-color: var(--gold); color: #241c05; font-weight: 600; }
+  .btn.primary:hover { filter: brightness(1.15); }
+  .btn.danger:hover { border-color: var(--red); color: var(--red); }
+  main { max-width: 1400px; margin: 0 auto; padding: 12px 14px; }
+  .top2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+  @media (max-width: 900px) {
+    .top2 { grid-template-columns: 1fr; }
+  }
+  .top2 section.card { display: flex; flex-direction: column; }
+  .top2 .body { flex: 1; display: flex; flex-direction: column; }
+  #notesText { flex: 1; min-height: 90px; }
+  #skulls { margin-top: 10px; }
+  section.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .top2 section.card { margin-bottom: 0; }
+  main > section.card:last-child { margin-bottom: 0; }
+  section.card > h2 {
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+    background: var(--panel2);
+    border-bottom: 1px solid var(--border);
+    color: #e0b94f;
+    font-weight: 600;
+    letter-spacing: .4px;
+  }
+  .body { padding: 8px 12px; }
+  textarea, input[type=text] {
+    width: 100%;
+    background: #0f1420;
+    color: #f4efe2;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  textarea:focus, input[type=text]:focus { outline: none; border-color: var(--gold); background: #141a29; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 8px;
+  }
+  .cell label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    font-weight: 600;
+  }
+  .cell textarea { min-height: 26px; }
+  .skulls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .skrow { display: flex; align-items: center; gap: 6px; }
+  .skrow .n {
+    flex: none; width: 30px; text-align: right;
+    font-size: 14px; color: #e0b94f; font-weight: 600;
+  }
+  .skrow input { flex: 1; height: 28px; }
+  .subhead {
+    margin: 8px 0 6px;
+    font-size: 11px;
+    color: #e0b94f;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+  .hintsec { display: flex; flex-direction: column; flex: 1; margin-bottom: 12px; }
+  .hintsec:last-child { margin-bottom: 0; }
+  .hintsec h3 { margin: 0 0 4px; font-size: 13px; color: #e0b94f; font-weight: 600; }
+  .hintsec textarea { flex: 1; min-height: 90px; }
+  /* dungeon cards */
+  .dcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 8px;
+  }
+  .dcard {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .dcard h4 { margin: 0 0 6px; font-size: 13px; color: #e0b94f; font-weight: 600; }
+  .dcard .frow { display: flex; gap: 8px; }
+  .dcard .frow .f { flex: 1; min-width: 0; }
+  .dcard label {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 2px;
+  }
+  .dcard input { height: 28px; }
+  .dcard textarea { min-height: 28px; }
+  /* overlay */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .overlay.open { display: flex; }
+  .overlay .box {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; width: min(820px, 100%); max-height: 90vh;
+    display: flex; flex-direction: column;
+  }
+  .overlay .box h3 { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--gold); }
+  .overlay .box textarea { flex: 1; min-height: 300px; margin: 12px 16px; border-radius: 6px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  .overlay .box .actions { padding: 0 16px 14px; display: flex; gap: 8px; justify-content: flex-end; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 6px 20px 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>OoT Randomizer Notes</h1>
+  <span class="saved" id="savedMsg"></span>
+  <span class="spacer"></span>
+  <button class="btn" id="exportBtn">Export .txt</button>
+  <button class="btn" id="importBtn">Import</button>
+  <button class="btn danger" id="resetBtn">Clear all</button>
+</header>
+
+<main>
+  <div class="top2">
+    <section class="card">
+      <h2>General Notes</h2>
+      <div class="body">
+        <textarea id="notesText"></textarea>
+        <h3 class="subhead">Skulltula rewards</h3>
+        <div class="skulls" id="skulls"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Hints</h2>
+      <div class="body" id="hintGroups"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Dungeons</h2>
+    <div class="body" id="dungeonBox"></div>
+  </section>
+
+  <section class="card">
+    <h2>Shops</h2>
+    <div class="body grid" id="shopsBox"></div>
+  </section>
+</main>
+
+<footer>Notes autosave to this browser (localStorage). Export/import keeps your plain-text format as a backup.</footer>
+
+<div class="overlay" id="exportOverlay">
+  <div class="box">
+    <h3>Export — plain text</h3>
+    <textarea id="exportText" spellcheck="false"></textarea>
+    <div class="actions">
+      <button class="btn primary" id="copyBtn">Copy to clipboard</button>
+      <button class="btn" id="exportClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="importOverlay">
+  <div class="box">
+    <h3>Import — paste text using the ===sections=== format</h3>
+    <textarea id="importText" spellcheck="false" placeholder="===notes===
+10 skulls = 
+20 skulls = 
+30 skulls = 
+40 skulls = 
+50 skulls =
+===woth===
+...
+===fool===
+...
+===dungeons===
+...
+===shops===
+..."></textarea>
+    <div class="actions">
+      <button class="btn primary" id="importApply">Replace current notes</button>
+      <button class="btn" id="importClose">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const STORE_KEY = "ootRandomizerNotes";
+
+  // reward dungeons (can hold medallion/spirit stone) -> entrance + reward + notes
+  const REWARD_DUNGEONS = [
+    ["tree", "Deku Tree"],
+    ["dc", "Dodongo's Cavern"],
+    ["jabu", "Jabu-Jabu"],
+    ["forest", "Forest Temple"],
+    ["fire", "Fire Temple"],
+    ["water", "Water Temple"],
+    ["spirit", "Spirit Temple"],
+    ["shadow", "Shadow Temple"]
+  ];
+  // non-reward dungeons (only matter as doors / for items)
+  const DOOR_DUNGEONS = [
+    ["ice", "Ice Cavern"],
+    ["gtg", "Gerudo Training Grounds"],
+    ["well", "Bottom of the Well"]
+  ];
+  // shop id + display name + import aliases (short labels)
+  const SHOPS = [
+    ["ctbazaar", "Castle Town Bazaar", ["ct bazaar", "ctbazaar"]],
+    ["ctpot", "Castle Town Potion Shop", ["ct pot", "ctpotion", "ctpot"]],
+    ["kakbaz", "Kakariko Bazaar", ["kak baz", "kak bazaar", "kakbaz"]],
+    ["kakpot", "Kakariko Potion Shop", ["kak pot", "kak potion", "kakpot"]],
+    ["zora", "Zora Shop", ["zora"]],
+    ["goron", "Goron Shop", ["goron"]],
+    ["kokiri", "Kokiri Shop", ["kokiri"]],
+    ["bombchu", "Bombchu Shop", ["bombchu shop", "bombchu bowling", "bombchu"]]
+  ];
+  const HINT_GROUPS = [
+    ["woth", "Way of the Hero"],
+    ["fool", "Foolish Hints"]
+  ];
+  const SKULLS = [["10", "10 Skulltulas"], ["20", "20 Skulltulas"], ["30", "30 Skulltulas"], ["40", "40 Skulltulas"], ["50", "50 Skulltulas"]];
+
+  const $ = (sel) => document.querySelector(sel);
+
+  function defaultState() {
+    const state = {
+      skulls: { "10": "", "20": "", "30": "", "40": "", "50": "" },
+      notes: "",
+      hints: { woth: "", fool: "" },
+      dungeons: {},
+      shops: {}
+    };
+    REWARD_DUNGEONS.forEach(([id]) => state.dungeons[id] = { entrance: "", reward: "", notes: "" });
+    DOOR_DUNGEONS.forEach(([id]) => state.dungeons[id] = { leads: "" });
+    SHOPS.forEach(([id]) => state.shops[id] = "");
+    return state;
+  }
+
+  let state = defaultState();
+  const readStore = () => {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      const base = defaultState();
+      if (parsed.skulls) base.skulls = Object.assign(base.skulls, parsed.skulls);
+      if (typeof parsed.notes === "string") base.notes = parsed.notes;
+      if (parsed.hints) {
+        for (const [gid] of HINT_GROUPS) {
+          const v = parsed.hints[gid];
+          if (typeof v === "string") base.hints[gid] = v;
+          else if (Array.isArray(v)) base.hints[gid] = v.join("\n");
+        }
+      }
+      if (parsed.dungeons) {
+        for (const [id] of [...REWARD_DUNGEONS, ...DOOR_DUNGEONS]) {
+          if (parsed.dungeons[id]) base.dungeons[id] = Object.assign(base.dungeons[id], parsed.dungeons[id]);
+        }
+      }
+      if (parsed.shops) base.shops = Object.assign(base.shops, parsed.shops);
+      return base;
+    } catch (e) { return null; }
+  };
+  const stored = readStore();
+  if (stored) state = stored;
+
+  let saveTimer = null;
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    catch (e) { /* storage unavailable (e.g. file:// in some browsers) */ }
+    const el = $("#savedMsg");
+    el.textContent = "saved";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { el.textContent = ""; }, 1500);
+  }
+  function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 250); }
+
+  /* ---------- rendering ---------- */
+  function renderSkulls() {
+    const box = $("#skulls");
+    box.innerHTML = "";
+    SKULLS.forEach(([key, label]) => {
+      const row = document.createElement("div");
+      row.className = "skrow";
+      const n = document.createElement("span");
+      n.className = "n";
+      n.textContent = key;
+      const inp = document.createElement("input");
+      inp.type = "text";
+      inp.value = state.skulls[key];
+      inp.title = label;
+      inp.addEventListener("input", () => { state.skulls[key] = inp.value; scheduleSave(); });
+      row.append(n, inp);
+      box.appendChild(row);
+    });
+  }
+
+  function renderNotes() {
+    $("#notesText").value = state.notes;
+  }
+
+  function renderHints() {
+    const wrap = $("#hintGroups");
+    wrap.innerHTML = "";
+    HINT_GROUPS.forEach(([gid, title]) => {
+      const sec = document.createElement("div");
+      sec.className = "hintsec";
+      const h = document.createElement("h3");
+      h.textContent = title;
+      const ta = document.createElement("textarea");
+      ta.value = state.hints[gid] || "";
+      ta.addEventListener("input", () => { state.hints[gid] = ta.value; scheduleSave(); });
+      sec.append(h, ta);
+      wrap.appendChild(sec);
+    });
+  }
+
+  function fieldControl(tag, value, onInput) {
+    const ctl = tag === "textarea" ? document.createElement("textarea") : document.createElement("input");
+    if (tag === "input") ctl.type = "text";
+    ctl.value = value || "";
+    ctl.addEventListener("input", onInput);
+    return ctl;
+  }
+
+  function dungeonField(id, key, label, textarea) {
+    const f = document.createElement("div");
+    f.className = "f";
+    const lab = document.createElement("label");
+    lab.textContent = label;
+    const ctl = fieldControl(textarea ? "textarea" : "input", state.dungeons[id][key], () => {
+      state.dungeons[id][key] = ctl.value;
+      scheduleSave();
+    });
+    f.append(lab, ctl);
+    return f;
+  }
+
+  function dungeonCard([id, name], fieldGroups) {
+    const card = document.createElement("div");
+    card.className = "dcard";
+    const h = document.createElement("h4");
+    h.textContent = name;
+    card.appendChild(h);
+    fieldGroups.forEach((group) => {
+      const row = document.createElement("div");
+      row.className = "frow";
+      group.forEach(([key, label, textarea]) => row.appendChild(dungeonField(id, key, label, textarea)));
+      card.appendChild(row);
+    });
+    return card;
+  }
+
+  function renderDungeons() {
+    const box = $("#dungeonBox");
+    box.innerHTML = "";
+
+    const grid = document.createElement("div");
+    grid.className = "dcards";
+    REWARD_DUNGEONS.forEach((entry) => {
+      grid.appendChild(dungeonCard(entry, [
+        [["entrance", "Entrance", false], ["reward", "Reward", false]],
+        [["notes", "Notes", true]]
+      ]));
+    });
+    box.appendChild(grid);
+
+    const grid2 = document.createElement("div");
+    grid2.className = "dcards";
+    grid2.style.marginTop = "8px";
+    DOOR_DUNGEONS.forEach((entry) => {
+      grid2.appendChild(dungeonCard(entry, [
+        [["leads", "Leads to", false]]
+      ]));
+    });
+    box.appendChild(grid2);
+  }
+
+  function renderShops() {
+    const grid = $("#shopsBox");
+    grid.innerHTML = "";
+    SHOPS.forEach(([id, label]) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      const lab = document.createElement("label");
+      lab.textContent = label;
+      const ta = document.createElement("textarea");
+      ta.value = state.shops[id];
+      ta.addEventListener("input", () => { state.shops[id] = ta.value; scheduleSave(); });
+      cell.append(lab, ta);
+      grid.appendChild(cell);
+    });
+  }
+
+  function renderAll() {
+    renderSkulls();
+    renderNotes();
+    renderHints();
+    renderDungeons();
+    renderShops();
+  }
+
+  /* ---------- text import / export (template ===sections=== format) ---------- */
+  function buildExport() {
+    const L = [];
+    const pushLine = (s) => L.push(s);
+
+    pushLine("===notes===");
+    state.notes.split(/\r?\n/).forEach((l) => { if (l.trim()) pushLine(l); });
+    SKULLS.forEach(([k, lab]) => {
+      if (state.skulls[k].trim()) pushLine(lab + " = " + state.skulls[k]);
+    });
+
+    pushLine("");
+    pushLine("===woth===");
+    if (state.hints.woth.trim()) pushLine(state.hints.woth);
+
+    pushLine("");
+    pushLine("===fool===");
+    if (state.hints.fool.trim()) pushLine(state.hints.fool);
+
+    pushLine("");
+    pushLine("===dungeons===");
+    REWARD_DUNGEONS.forEach(([id, name]) => {
+      const d = state.dungeons[id];
+      pushLine(name + ":");
+      if (d.entrance.trim()) pushLine("  entrance: " + d.entrance);
+      if (d.reward.trim()) pushLine("  reward: " + d.reward);
+      if (d.notes.trim()) d.notes.split(/\r?\n/).forEach((l) => pushLine("  note: " + l));
+    });
+    DOOR_DUNGEONS.forEach(([id, name]) => {
+      const d = state.dungeons[id];
+      pushLine(name + ":");
+      if (d.leads.trim()) pushLine("  leads to: " + d.leads);
+    });
+
+    pushLine("");
+    pushLine("===shops===");
+    SHOPS.forEach(([id, label]) => {
+      const v = state.shops[id].trim();
+      if (v) v.split(/\r?\n/).forEach((l) => pushLine(label + ": " + l));
+    });
+
+    return L.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  }
+
+  const headerRe = /^===\s*([^=]+?)\s*===\s*$/;
+  const skullRe = /^(\d{1,3})\s*skulltulas?\s*=\s*(.*)$/i;
+
+  function sectionKey(header) {
+    const h = header.trim().toLowerCase();
+    if (h === "notes") return "notes";
+    if (["woth", "way of the hero"].includes(h)) return "hints.woth";
+    if (["fool", "foolish", "foolish hints"].includes(h)) return "hints.fool";
+    if (["dungeons", "dungeon"].includes(h)) return "dungeons";
+    if (["shops", "shop"].includes(h)) return "shops";
+    return null;
+  }
+
+  const dungeonByName = {};
+  [...REWARD_DUNGEONS, ...DOOR_DUNGEONS].forEach(([id, name]) => { dungeonByName[name.toLowerCase()] = id; });
+
+  function parseInto(text) {
+    const st = defaultState();
+    const lines = text.split(/\r?\n/);
+    let current = null;
+    let curDungeon = null;
+    const hintBuf = {};
+
+    const flushHint = () => {
+      for (const gid of ["woth", "fool"]) {
+        if (hintBuf[gid]) {
+          st.hints[gid] = hintBuf[gid].join("\n").trim();
+          delete hintBuf[gid];
+        }
+      }
+    };
+
+    lines.forEach((line) => {
+      const header = headerRe.exec(line);
+      if (header) {
+        flushHint();
+        current = sectionKey(header[1]);
+        curDungeon = null;
+        return;
+      }
+      if (!current) return;
+      const trimmed = line.trim();
+
+      if (current === "hints.woth" || current === "hints.fool") {
+        const gid = current.split(".")[1];
+        (hintBuf[gid] = hintBuf[gid] || []).push(line);
+        return;
+      }
+
+      if (!trimmed) return;
+
+      if (current === "notes") {
+        const skull = skullRe.exec(trimmed);
+        if (skull && st.skulls[skull[1]] !== undefined) {
+          st.skulls[skull[1]] = skull[2].trim();
+        } else {
+          st.notes += (st.notes ? "\n" : "") + trimmed;
+        }
+        return;
+      }
+
+      if (current === "shops") {
+        const ci = trimmed.indexOf(":");
+        if (ci > 0) {
+          const prefix = trimmed.slice(0, ci).trim().toLowerCase();
+          const rest = trimmed.slice(ci + 1).trim();
+          const shop = SHOPS.find(([id, label, aliases]) =>
+            label.toLowerCase() === prefix || aliases.includes(prefix));
+          if (shop && rest) {
+            const [id] = shop;
+            st.shops[id] += (st.shops[id] ? "\n" : "") + rest;
+          }
+        }
+        return;
+      }
+
+      if (current === "dungeons") {
+        // dungeon header line? "Name:"
+        const dl = dungeonByName[trimmed.replace(/:$/, "").toLowerCase()];
+        if (dl) { curDungeon = dl; return; }
+        if (!curDungeon) return;
+        const m = /^([a-z ]+?):\s?(.*)$/i.exec(trimmed);
+        if (m) {
+          const key = m[1].trim().toLowerCase();
+          const rest = m[2];
+          const d = st.dungeons[curDungeon];
+          if (key === "entrance") d.entrance = rest;
+          else if (key === "reward") d.reward = rest;
+          else if (key === "note" || key === "notes") d.notes += (d.notes ? "\n" : "") + rest;
+          else if (key === "leads" || key === "leads to") d.leads = rest;
+        }
+      }
+    });
+    flushHint();
+    return st;
+  }
+
+  /* ---------- wire up ---------- */
+  function wire() {
+    $("#notesText").addEventListener("input", () => { state.notes = $("#notesText").value; scheduleSave(); });
+
+    $("#exportBtn").addEventListener("click", () => {
+      $("#exportText").value = buildExport();
+      $("#exportOverlay").classList.add("open");
+      $("#exportText").focus();
+    });
+    $("#copyBtn").addEventListener("click", () => {
+      const ta = $("#exportText");
+      ta.select();
+      document.execCommand("copy");
+      const b = $("#copyBtn");
+      b.textContent = "Copied!";
+      setTimeout(() => { b.textContent = "Copy to clipboard"; }, 1200);
+    });
+    $("#exportClose").addEventListener("click", () => $("#exportOverlay").classList.remove("open"));
+
+    $("#importBtn").addEventListener("click", () => {
+      $("#importText").value = "";
+      $("#importOverlay").classList.add("open");
+    });
+    $("#importClose").addEventListener("click", () => $("#importOverlay").classList.remove("open"));
+    $("#importApply").addEventListener("click", () => {
+      const st = parseInto($("#importText").value);
+      state = st;
+      renderAll();
+      save();
+      $("#importOverlay").classList.remove("open");
+    });
+
+    $("#resetBtn").addEventListener("click", () => {
+      if (!confirm("Clear ALL notes in this app? (Autosaved copy will be wiped.)")) return;
+      state = defaultState();
+      renderAll();
+      save();
+    });
+
+    document.querySelectorAll(".overlay").forEach((ov) => {
+      ov.addEventListener("click", (e) => { if (e.target === ov) ov.classList.remove("open"); });
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") document.querySelectorAll(".overlay.open").forEach((ov) => ov.classList.remove("open"));
+    });
+  }
+
+  renderAll();
+  wire();
+  save();
+})();
+</script>
+</body>
+</html>
