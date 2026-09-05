@@ -296,7 +296,7 @@
       shops: {}
     };
     REWARD_DUNGEONS.forEach(([id]) => state.dungeons[id] = { entrance: "", reward: "", notes: "" });
-    DOOR_DUNGEONS.forEach(([id]) => state.dungeons[id] = { leads: "" });
+    DOOR_DUNGEONS.forEach(([id]) => state.dungeons[id] = { entrance: "", notes: "" });
     SHOPS.forEach(([id]) => state.shops[id] = "");
     return state;
   }
@@ -320,7 +320,11 @@
       }
       if (parsed.dungeons) {
         for (const [id] of [...REWARD_DUNGEONS, ...DOOR_DUNGEONS]) {
-          if (parsed.dungeons[id]) base.dungeons[id] = Object.assign(base.dungeons[id], parsed.dungeons[id]);
+          if (parsed.dungeons[id]) {
+            const d = parsed.dungeons[id];
+            base.dungeons[id] = Object.assign(base.dungeons[id], d);
+            if (d.leads && !d.entrance) base.dungeons[id].entrance = d.leads;
+          }
         }
       }
       if (parsed.shops) base.shops = Object.assign(base.shops, parsed.shops);
@@ -436,7 +440,8 @@
     grid2.style.marginTop = "8px";
     DOOR_DUNGEONS.forEach((entry) => {
       grid2.appendChild(dungeonCard(entry, [
-        [["leads", "Leads to", false]]
+        [["entrance", "Entrance", false]],
+        [["notes", "Notes", true]]
       ]));
     });
     box.appendChild(grid2);
@@ -497,7 +502,8 @@
     DOOR_DUNGEONS.forEach(([id, name]) => {
       const d = state.dungeons[id];
       pushLine(name + ":");
-      if (d.leads.trim()) pushLine("  leads to: " + d.leads);
+      if (d.entrance.trim()) pushLine("  entrance: " + d.entrance);
+      if (d.notes.trim()) d.notes.split(/\r?\n/).forEach((l) => pushLine("  note: " + l));
     });
 
     pushLine("");
@@ -599,7 +605,7 @@
           if (key === "entrance") d.entrance = rest;
           else if (key === "reward") d.reward = rest;
           else if (key === "note" || key === "notes") d.notes += (d.notes ? "\n" : "") + rest;
-          else if (key === "leads" || key === "leads to") d.leads = rest;
+          else if (key === "leads" || key === "leads to") d.entrance = rest;
         }
       }
     });
